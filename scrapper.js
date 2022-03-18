@@ -1,6 +1,10 @@
 const puppeteer = require("puppeteer");
 const chartinkUrl = "https://chartink.com/screener/test-2022-03-12-4";
-let timeFrames = ["hourly", "daily", "weekly"];
+let timeFrames = [
+  { name: "hourly", timeFrame: "60_minute", range: "22" },
+  { name: "daily", timeFrame: "d", range: "198" },
+  { name: "weekly", timeFrame: "w", range: "504" },
+];
 let browser;
 let page;
 (async () => {
@@ -9,7 +13,7 @@ let page;
   await page.goto(chartinkUrl);
   var stocksUrls = await scrapStocks();
   if (stocksUrls.length != 0) {
-    goToStockCharts(stocksUrls);
+    await goToStockCharts(stocksUrls);
   }
   await browser.close();
 })();
@@ -42,21 +46,23 @@ let goToStockCharts = async (stockUrls) => {
   }
 };
 
-let setTimeFrame = async (timeFrame) => {
-  switch (timeFrame) {
-    case "hourly":
-      await page.$eval("#d", (timeframe) => (timeframe.value = "60_minute"));
-      await page.$eval("#ti", (timeframe) => (timeframe.value = "22"));
-      break;
-    case "daily":
-      await page.$eval("#d", (timeframe) => (timeframe.value = "d"));
-      await page.$eval("#ti", (timeframe) => (timeframe.value = "198"));
-      break;
-    case "weekly":
-      await page.$eval("#d", (timeframe) => (timeframe.value = "w"));
-      await page.$eval("#ti", (timeframe) => (timeframe.value = "504"));
+let setTimeFrame = async (inputTimeFrame) => {
+  try {
+    await page.$eval(
+      "#d",
+      (selectBox, timeFrame) => (selectBox.value = timeFrame),
+      inputTimeFrame.timeFrame
+    );
+    await page.$eval(
+      "#ti",
+      (selectBox, range) => (selectBox.value = range),
+      inputTimeFrame.range
+    );
+  } catch (err) {
+    console.log(err);
   }
 };
+
 let setMovingAverages = async () => {
   const movingAverageRows = await page.$$("#moving_avgs tr:not(.limg)");
   for (var movingAverageRow = 0; movingAverageRow <= 2; movingAverageRow++) {
