@@ -1,4 +1,5 @@
 const puppeteer = require("puppeteer");
+console.log("done")
 const chartinkUrl = "https://chartink.com/screener/test-2022-03-12-4";
 let timeFrames = [
   { name: "hourly", timeFrame: "60_minute", range: "22" },
